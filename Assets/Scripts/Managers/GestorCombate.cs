@@ -1,4 +1,5 @@
 using UnityEngine;
+using System.Collections.Generic; // <--- AÑADE ESTO
 
 public class GestorCombate : MonoBehaviour
 {
@@ -26,9 +27,15 @@ public class GestorCombate : MonoBehaviour
         float danio = ObtenerDanio(capturada);
         towerManager.AplicarDanio(danio);
 
-        if (atacante != null)
+        // --- NUEVO: AVISAR A LOS ITEMS ---
+        if (atacante != null && atacante.itemsEquipados != null)
         {
-            atacante.SumarCargaCaptura();
+            // Recorremos todos los items del atacante
+            foreach (ItemData item in atacante.itemsEquipados)
+            {
+                // Les decimos: "Oye, capturaste una pieza que valía X oro"
+                item.AlCapturarPieza(atacante, capturada.valorOro);
+            }
         }
 
         int oroGanado = capturada.valorOro;
@@ -65,7 +72,15 @@ public class GestorCombate : MonoBehaviour
             Destroy(efecto, 3f);
         }
         // ---------------------------------------
-
+        if (capturada.itemsEquipados != null)
+        {
+            // Creamos una lista temporal para evitar errores si el item modifica la lista original
+            List<ItemData> itemsVictima = new List<ItemData>(capturada.itemsEquipados);
+            foreach (ItemData item in itemsVictima)
+            {
+                item.AlMorir(capturada, atacante);
+            }
+        }
         gestorTablero.EliminarPieza(capturada.posicionEnTablero);
         Destroy(capturada.gameObject);
 

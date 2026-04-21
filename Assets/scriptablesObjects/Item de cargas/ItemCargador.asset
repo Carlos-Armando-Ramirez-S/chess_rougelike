@@ -16,4 +16,5 @@ MonoBehaviour:
   costoItem: 20
   icono: {fileID: 0}
   descripcion: (item sujeto a cambios)
+  usaSistemaDeCargas: 1
   cargasPorCaptura: 10

@@ -62,6 +62,7 @@
   <ItemGroup>
     <Compile Include="Assets\Scripts\nucleo\GameManager.cs" />
     <Compile Include="Assets\Scripts\Interfaz\MainMenu.cs" />
+    <Compile Include="Assets\Scripts\ItemDataBase\cargas\ItemGenerador.cs" />
     <Compile Include="Assets\Starfield Skybox\Demo\Script\LookCamera.cs" />
     <Compile Include="Assets\Scripts\ItemDataBase\ItemData.cs" />
     <Compile Include="Assets\Scripts\tienda\ShopManager.cs" />
@@ -71,6 +72,7 @@
     <Compile Include="Assets\Scripts\ItemDataBase\ItemEscudo.cs" />
     <Compile Include="Assets\Scripts\Managers\GestorAmbientacion.cs" />
     <Compile Include="Assets\Scripts\Entorno\GeneradorTablerosFantasmas.cs" />
+    <Compile Include="Assets\Scripts\ItemDataBase\cargas\ItemDuplicador.cs" />
     <Compile Include="Assets\Scripts\Managers\GestorTablero.cs" />
     <Compile Include="Assets\Scripts\ItemPocionPromocion.cs" />
     <Compile Include="Assets\Scripts\Interfaz\NivelesScript.cs" />
@@ -82,8 +84,11 @@
     <Compile Include="Assets\Scripts\tablero\TableroScript.cs" />
     <Compile Include="Assets\Scripts\Managers\GestorFinPartida.cs" />
     <Compile Include="Assets\Scripts\Managers\GestorPromocion.cs" />
+    <Compile Include="Assets\Scripts\ItemDataBase\cargas\ItemLegado.cs" />
     <Compile Include="Assets\Scripts\Managers\GestorReyes.cs" />
+    <Compile Include="Assets\Scripts\ItemDataBase\cargas\ItemCargador.cs" />
     <Compile Include="Assets\Scripts\piezas\AtributosPieza.cs" />
+    <Compile Include="Assets\Scripts\ItemDataBase\cargas\ItemInteres.cs" />
     <Compile Include="Assets\Scripts\tablero\Casilla.cs" />
     <Compile Include="Assets\Scripts\Entorno\GneradorNubes.cs" />
     <Compile Include="Assets\Scripts\piezas\InicializadorPiezas.cs" />
@@ -98,7 +103,6 @@
     <Compile Include="Assets\Scripts\combate\TowerManager.cs" />
     <Compile Include="Assets\Scripts\Interfaz\PanelInfoPieza.cs" />
     <Compile Include="Assets\Scripts\piezas\animacionPiezas.cs" />
-    <Compile Include="Assets\Scripts\ItemDataBase\ItemCargador.cs" />
     <Compile Include="Assets\Scripts\tienda\ItemTienda.cs" />
     <Compile Include="Assets\Scripts\Managers\GestorHerramientas.cs" />
     <Compile Include="Assets\Scripts\ItemDataBase\ItemEstatuaDorada.cs" />

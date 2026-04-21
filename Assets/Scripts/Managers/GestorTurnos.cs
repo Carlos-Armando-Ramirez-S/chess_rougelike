@@ -32,42 +32,49 @@ public class GestorTurnos : MonoBehaviour
 
     public void CambiarTurno()
     {
-        // 1. Lógica de Recompensas (Estatuadorada) para el jugador que termina su turno
-        if (MoneyManager.instance != null && registroDePiezas != null)
+        ColorPieza jugadorQueTermina = turnoActual;
+
+        // --- Lógica de Recompensas (Estatua Dorada) ---
+        if (registroDePiezas != null)
         {
             foreach (var kvp in registroDePiezas)
             {
                 AtributosPieza pieza = kvp.Value;
-                // Verificamos si la pieza es del jugador actual y tiene el efecto
-                if (pieza.color == turnoActual && pieza.DebeRecibirRecompensaEstatuadorada())
+                if (pieza.color == jugadorQueTermina)
                 {
-                    MoneyManager.instance.AnadirDinero(turnoActual, 1);
-                    Debug.Log($"{pieza.name} generó 1 de oro por Estatuadorada.");
+                    if (pieza.DebeRecibirRecompensaEstatuadorada())
+                    {
+                        MoneyManager.instance.AnadirDinero(jugadorQueTermina, 1);
+                        Debug.Log($"{pieza.name} generó 1 oro por Estatuadorada.");
+                    }
                 }
             }
         }
 
-        // 2. Cambio de Turno Lógico
+        // --- Cambio de Turno Lógico ---
         turnoActual = (turnoActual == ColorPieza.BLANCO) ? ColorPieza.NEGRO : ColorPieza.BLANCO;
         Debug.Log($"--- Ahora es el turno de las piezas {turnoActual} ---");
 
-        // 3. Resetear estados del nuevo jugador
+        // --- NUEVA LÓGICA: ORO AL INICIAR TURNO ---
+        // Ahora le damos el oro al jugador que EMPIEZA su turno
+        if (MoneyManager.instance != null)
+        {
+            MoneyManager.instance.AnadirDinero(turnoActual, 1);
+            Debug.Log($"<color=yellow>+1 oro por inicio de turno para {turnoActual}.</color>");
+        }
+        // --------------------------------------------
+
         ResetearContadoresDeMovimiento(turnoActual);
         ResetearEstadoMovimiento(turnoActual);
 
-        // 4. Actualizar UI y Tienda
         ActualizarUI();
 
         if (shopManager != null)
             shopManager.RefrescarTienda();
 
-        // --- 5. ACTUALIZAR INDICADOR DE ACUMULACIÓN ---
-        // Le decimos al indicador que verifique si debe mostrarse para el nuevo turno
+        // Avisar al indicador de cargas
         if (indicadorCargador != null)
-        {
             indicadorCargador.VerificarYActualizar();
-        }
-        // ----------------------------------------------
     }
 
     private void ResetearContadoresDeMovimiento(ColorPieza colorJugador)
@@ -76,7 +83,21 @@ public class GestorTurnos : MonoBehaviour
         foreach (var kvp in registroDePiezas)
         {
             if (kvp.Value.color == colorJugador)
+            {
                 kvp.Value.movimientosRestantesEsteTurno = 1;
+
+                // --- NUEVA LÓGICA: AVISAR A LOS ITEMS ---
+                // Revisamos si la pieza tiene items equipados
+                if (kvp.Value.itemsEquipados != null)
+                {
+                    foreach (ItemData item in kvp.Value.itemsEquipados)
+                    {
+                        // Llamamos a la función del item
+                        item.AlIniciarTurno(kvp.Value);
+                    }
+                }
+                // ---------------------------------------
+            }
         }
     }
 
