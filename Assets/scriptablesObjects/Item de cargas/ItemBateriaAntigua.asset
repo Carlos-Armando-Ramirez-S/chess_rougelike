@@ -1,0 +1,22 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 250271686fa4b2c4e87bd8c9633357c7, type: 3}
+  m_Name: ItemBateriaAntigua
+  m_EditorClassIdentifier: 
+  nombreItem: Bateria Antigua
+  costoItem: 10
+  icono: {fileID: 0}
+  descripcion: "Al equipar este \xEDtem obtendr\xE1s 50 acumulaciones inmediatamente
+    y al iniciar tu turno obtendr\xE1s 1 acumulacion mas por turno. "
+  usaSistemaDeCargas: 1
+  cargasIniciales: 50
+  cargasPorTurno: 1

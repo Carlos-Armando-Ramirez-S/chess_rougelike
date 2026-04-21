@@ -2,7 +2,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.EventSystems; // Necesario para detectar el ratón
 
-// Añadimos las interfaces de ratón
+// Añadimos las interfaces para detectar la entrada del ratón
 public class IndicadorAcumulacion : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
 {
     [Header("Referencias UI")]
@@ -25,25 +25,36 @@ public class IndicadorAcumulacion : MonoBehaviour, IPointerEnterHandler, IPointe
         if (contenedorVisual != null) contenedorVisual.SetActive(false);
     }
 
+    // Función pública para ser llamada desde GestorTurnos
     public void VerificarYActualizar()
     {
         if (GameManager.instance == null || MoneyManager.instance == null) return;
 
         ColorPieza turnoActual = GameManager.instance.TurnoActual;
-        bool tieneItemEquipado = false;
+        bool tieneItemDeCargas = false;
 
         AtributosPieza[] todasLasPiezas = FindObjectsByType<AtributosPieza>(FindObjectsSortMode.None);
 
         foreach (AtributosPieza pieza in todasLasPiezas)
         {
-            if (pieza.color == turnoActual && pieza.tieneCargador)
+            if (pieza.color == turnoActual)
             {
-                tieneItemEquipado = true;
-                break;
+                if (pieza.itemsEquipados != null)
+                {
+                    foreach (ItemData item in pieza.itemsEquipados)
+                    {
+                        if (item.usaSistemaDeCargas)
+                        {
+                            tieneItemDeCargas = true;
+                            break;
+                        }
+                    }
+                }
+                if (tieneItemDeCargas) break;
             }
         }
 
-        if (tieneItemEquipado)
+        if (tieneItemDeCargas)
         {
             contenedorVisual.SetActive(true);
             int cargas = MoneyManager.instance.GetCargas(turnoActual);
@@ -86,24 +97,23 @@ public class IndicadorAcumulacion : MonoBehaviour, IPointerEnterHandler, IPointe
         return colorUltimo;
     }
 
-    // --- LÓGICA DE RATÓN (TOOLTIP) ---
+    // --- LÓGICA DEL POP-UP (TOOLTIP) ---
 
     public void OnPointerEnter(PointerEventData eventData)
     {
-        Debug.Log("Ratón entró al indicador");
-        // Al entrar el ratón, mostramos el tooltip con el número exacto
+        // Al entrar el ratón, mostramos el número exacto
         if (GameManager.instance == null || MoneyManager.instance == null || GestorHerramientas.instance == null) return;
 
         ColorPieza turno = GameManager.instance.TurnoActual;
         int cantidad = MoneyManager.instance.GetCargas(turno);
 
-        // Mostramos: Título "Cargas" y Descripción "Cantidad"
+        // Mostramos el título y la cantidad exacta
         GestorHerramientas.instance.MostrarTooltip("Cargas Acumuladas", cantidad.ToString());
     }
 
     public void OnPointerExit(PointerEventData eventData)
     {
-        // Al salir el ratón, ocultamos el tooltip
+        // Al salir, ocultamos
         if (GestorHerramientas.instance != null)
         {
             GestorHerramientas.instance.OcultarTooltip();

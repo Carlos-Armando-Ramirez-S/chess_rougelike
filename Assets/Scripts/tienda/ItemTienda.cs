@@ -1,88 +1,81 @@
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
-using UnityEngine.EventSystems;
 
-public class ItemTienda : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
+public class ItemTienda : MonoBehaviour
 {
     [Header("Configuración")]
     public ItemData datosDelItem;
 
     [Header("Referencias UI")]
-    public Text textoNombreUI;
-    public Text textoPrecioUI;
+    public TMP_Text textoNombreUI;
+    public TMP_Text textoPrecioUI;
     public Image iconoUI;
-    public Button botonComprar;
 
     void Start()
     {
         ActualizarUI();
     }
 
-    void ActualizarUI()
+    public void ActualizarUI()
     {
         if (datosDelItem == null) return;
+
         if (textoNombreUI != null) textoNombreUI.text = datosDelItem.nombreItem;
         if (textoPrecioUI != null) textoPrecioUI.text = "Costo: " + datosDelItem.costoItem;
         if (iconoUI != null) iconoUI.sprite = datosDelItem.icono;
     }
 
+    // --- FUNCIÓN PARA EL BOTÓN (Void) ---
+    // Esta es la que seleccionarás en el OnClick del botón
+    public void IntentarComprar()
+    {
+        bool exito = ComprarItem();
+
+        // Si la compra fue exitosa, el item se destruye solo
+        if (exito)
+        {
+            Destroy(gameObject);
+        }
+    }
+
+    // --- FUNCIÓN DE LÓGICA (Bool) ---
+    // Esta la usa el ShopManager
     public bool ComprarItem()
     {
+        // 1. Verificaciones
+        if (datosDelItem == null || GameManager.instance == null || MoneyManager.instance == null) return false;
+
         AtributosPieza pieza = GameManager.instance.ObtenerPiezaSeleccionada();
 
-        // 1. Verificar selección
         if (pieza == null)
         {
-            Debug.Log("<color=red>¡Selecciona una pieza antes de comprar!</color>");
+            Debug.LogWarning("Selecciona una pieza primero.");
             return false;
         }
 
-        // 2. Verificar límite usando la lista
         if (pieza.itemsEquipados.Count >= pieza.limiteItems)
         {
-            Debug.Log("<color=red>Esta pieza está llena de items.</color>");
+            Debug.LogWarning("Esta pieza está llena.");
             return false;
         }
 
         ColorPieza jugador = GameManager.instance.TurnoActual;
+        int dinero = MoneyManager.instance.GetDinero(jugador);
 
-        if (MoneyManager.instance.GetDinero(jugador) >= datosDelItem.costoItem)
+        if (dinero < datosDelItem.costoItem)
         {
-            MoneyManager.instance.GastarDinero(jugador, datosDelItem.costoItem);
-
-            // Añadimos a la lista
-            pieza.EquiparItem(datosDelItem);
-
-            // Ejecutamos el efecto
-            datosDelItem.EjecutarEfecto(pieza);
-
-            // Actualizamos el panel visual
-            GameManager.instance.RefrescarInfoPiezaSeleccionada();
-
-            return true;
-        }
-        else
-        {
-            Debug.Log("<color=red>Oro insuficiente.</color>");
+            Debug.LogWarning("Oro insuficiente.");
             return false;
         }
-    }
 
-    // ... (Funciones de OnPointerEnter y OnPointerExit se quedan igual) ...
-    public void OnPointerEnter(PointerEventData eventData)
-    {
-        if (datosDelItem != null && GestorHerramientas.instance != null)
-        {
-            GestorHerramientas.instance.MostrarTooltip(datosDelItem.nombreItem, datosDelItem.descripcion);
-        }
-    }
+        // --- COMPRA EXITOSA ---
+        MoneyManager.instance.GastarDinero(jugador, datosDelItem.costoItem);
+        pieza.EquiparItem(datosDelItem);
+        datosDelItem.EjecutarEfecto(pieza);
 
-    public void OnPointerExit(PointerEventData eventData)
-    {
-        if (GestorHerramientas.instance != null)
-        {
-            GestorHerramientas.instance.OcultarTooltip();
-        }
+        Debug.Log($"<color=green>¡Has comprado {datosDelItem.nombreItem}!</color>");
+
+        return true; // Devolvemos TRUE
     }
 }
