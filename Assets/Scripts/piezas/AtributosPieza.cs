@@ -47,7 +47,7 @@ public class AtributosPieza : MonoBehaviour
     public int limiteItems = 4;
 
     [Header("Visual Item")]
-    private GameObject iconoItemVisual; // Referencia al sprite 2D
+    public GameObject iconoItemVisual; // Referencia al sprite 2D
 
     private void OnMouseDown()
     {
