@@ -2968,13 +2968,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a0a331bb49875664bbbb9a6b5cace419, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  prefabTableroFantasma: {fileID: 8270321882622105105, guid: ded74f7f3ad855a47a0f3a482d4705d3, type: 3}
+  prefabTableroFantasma: {fileID: 9079660830350903897, guid: 94db1da0d92e81240ad6a796b992185f, type: 3}
   contenedorFantasmas: {fileID: 0}
   centroTablero: {fileID: 1821591928}
   radioMinimo: 20
   radioMaximo: 50
-  alturaMinima: 50
-  alturaMaxima: 150
+  alturaMinima: -75
+  alturaMaxima: -150
   tiempoEntreGeneracion: 5
   maxTableros: 10
   distanciaMinima: 15
@@ -3660,7 +3660,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8f753bbc9b2f491448ff52da3bd07c9d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  panelPrincipalRect: {fileID: 0}
+  panelPrincipalRect: {fileID: 297916848}
   prefabBaseItem: {fileID: 1837890912343388482, guid: c49033996d915d948825fc1038caf61f, type: 3}
   slotsTienda:
   - {fileID: 577987355}
@@ -5097,7 +5097,7 @@ MonoBehaviour:
   calculadorMovimientos: {fileID: 1341089835}
   gestorMovimiento: {fileID: 1341089838}
   gestorPromocion: {fileID: 1341089834}
-  enemyAI: {fileID: 0}
+  enemyAI: {fileID: 383055354}
   panelInfoPieza: {fileID: 0}
   materialMovimiento: {fileID: 2100000, guid: 3e0e3796fef9bfe48ac38c035273901c, type: 2}
   materialCaptura: {fileID: 2100000, guid: 0e719cdee64e739448807208798e52ae, type: 2}
@@ -5190,7 +5190,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   anunciadorTurno: {fileID: 1341089842}
   textoTurnoHUD: {fileID: 645977508}
-  textoTemporizador: {fileID: 0}
+  textoTemporizador: {fileID: 2098403864}
   shopManager: {fileID: 1010200079}
   indicadorCargador: {fileID: 1045549285}
   tiempoMaximo: 15
