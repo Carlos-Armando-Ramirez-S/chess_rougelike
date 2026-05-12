@@ -204,7 +204,58 @@ MonoBehaviour:
   reyPrefab: {fileID: 919132149155446097, guid: eb6fe264ea81275478092cbe7651fca9, type: 3}
   materialBlanco: {fileID: 2100000, guid: f393951f54aeb02478d2abb8f8b90b65, type: 2}
   materialNegro: {fileID: 2100000, guid: 42e90958595273e429809e3e5e245d20, type: 2}
-  prefabIconoItem: {fileID: 0}
+  prefabIconoItem: {fileID: 3113695844356509755, guid: 7f752beff614bbe41a5432e14623a257, type: 3}
+--- !u!1 &38667563
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 38667564}
+  - component: {fileID: 38667565}
+  m_Layer: 0
+  m_Name: GestorTiradas
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &38667564
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 38667563}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1556328864}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &38667565
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 38667563}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 46412e1f9ac6700479b589bc141ebdda, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  prefabDado: {fileID: 3470066092063569839, guid: e65d9cfe4a4ff3d4a987ec898c8f2619, type: 3}
+  spawnPoint: {fileID: 1809987864}
+  pantallaDadoUI: {fileID: 1298147802}
+  fuerzaLanzamiento: 3
+  torqueGiro: 3.5
+  tiempoMaximoEspera: 8
+  pausaFinal: 1.5
 --- !u!1 &45311029
 GameObject:
   m_ObjectHideFlags: 0
@@ -951,7 +1002,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &297916848
 RectTransform:
   m_ObjectHideFlags: 0
@@ -3674,6 +3725,7 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 4292f177eccf10048bc1ade1daa64ad8, type: 2}
   - {fileID: 11400000, guid: 0e1d4748218523e46a6e7cc162c1c0a7, type: 2}
   - {fileID: 11400000, guid: 20aa290b27f3bdc42b87a3563dccfeff, type: 2}
+  - {fileID: 11400000, guid: 11e4872a751c60242baf6f08bfb1d4f2, type: 2}
   costoReroll: 5
   duracionAnimacion: 0.3
 --- !u!4 &1010200080
@@ -5732,6 +5784,7 @@ Transform:
   - {fileID: 707816306}
   - {fileID: 1935851577}
   - {fileID: 383055353}
+  - {fileID: 38667564}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1565129389

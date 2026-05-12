@@ -63,7 +63,6 @@
     <Compile Include="Assets\Scripts\nucleo\GameManager.cs" />
     <Compile Include="Assets\Scripts\Interfaz\MainMenu.cs" />
     <Compile Include="Assets\Scripts\ItemDataBase\cargas\ItemGenerador.cs" />
-    <Compile Include="Assets\Starfield Skybox\Demo\Script\LookCamera.cs" />
     <Compile Include="Assets\Scripts\ItemDataBase\ItemData.cs" />
     <Compile Include="Assets\Scripts\tienda\ShopManager.cs" />
     <Compile Include="Assets\Scripts\Entorno\TorreFantasmaIA.cs" />
