@@ -82,6 +82,7 @@
     <Compile Include="Assets\Scripts\Managers\GestorMovimiento.cs" />
     <Compile Include="Assets\Scripts\Interfaz\IndicadorAcumulacion.cs" />
     <Compile Include="Assets\Scripts\piezas\Pieza.cs" />
+    <Compile Include="Assets\Scripts\Interfaz\PausaScript.cs" />
     <Compile Include="Assets\Scripts\tablero\CrearCasillas.cs" />
     <Compile Include="Assets\Scripts\tablero\TableroScript.cs" />
     <Compile Include="Assets\Scripts\Managers\GestorFinPartida.cs" />
@@ -114,7 +115,6 @@
     <Compile Include="Assets\Scripts\Managers\GestorHerramientas.cs" />
     <Compile Include="Assets\Scripts\ItemDataBase\ItemEstatuaDorada.cs" />
     <Compile Include="Assets\Scripts\Managers\CalculadorMovimiento.cs" />
-    <Compile Include="Assets\Scripts\Interfaz\Nivel1Script.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Assets\TextMesh Pro\Shaders\TMPro.cginc" />
