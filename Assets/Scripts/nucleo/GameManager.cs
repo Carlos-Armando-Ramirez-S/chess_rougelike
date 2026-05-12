@@ -1,19 +1,25 @@
 using UnityEngine;
 using System.Collections.Generic;
+using System.Collections;
 
 public class GameManager : MonoBehaviour
 {
     public static GameManager instance;
 
     [Header("Gestores")]
-    [SerializeField] private GestorTurnos gestorTurnos;
-    [SerializeField] private GestorTablero gestorTablero;
-    [SerializeField] private CalculadorMovimientos calculadorMovimientos;
-    [SerializeField] private GestorMovimiento gestorMovimiento;
-    [SerializeField] private GestorPromocion gestorPromocion;
+    [SerializeField] public GestorTurnos gestorTurnos;
+    [SerializeField] public GestorTablero gestorTablero;
+    [SerializeField] public CalculadorMovimientos calculadorMovimientos;
+    [SerializeField] public GestorMovimiento gestorMovimiento;
+    [SerializeField] public GestorPromocion gestorPromocion;
+
+    // --- NUEVA VARIABLE AQUÍ (Fuera de cualquier función) ---
+    [Header("IA Enemiga")]
+    [SerializeField] private EnemyAI enemyAI;
+    // -------------------------------------------------------
 
     [Header("UI Info Pieza")]
-    [SerializeField] private PanelInfoPieza panelInfoPieza; // Arrastra aquí tu panel en el Inspector
+    [SerializeField] private PanelInfoPieza panelInfoPieza;
 
     [Header("Visual")]
     [SerializeField] private Material materialMovimiento;
@@ -22,7 +28,6 @@ public class GameManager : MonoBehaviour
     private AtributosPieza piezaSeleccionada;
     private List<Vector2Int> movimientosPosibles = new List<Vector2Int>();
 
-
     [Header("Estado de partida")]
     private bool juegoTerminado = false;
 
@@ -30,12 +35,16 @@ public class GameManager : MonoBehaviour
     [SerializeField] private GameObject panelFinDeJuego;
     [SerializeField] private UnityEngine.UI.Text textoGanador;
 
-
     void Awake()
     {
         instance = this;
+
+        // --- LÓGICA DE MODO DE JUEGO (DENTRO DE AWAKE) ---
+        VerificarModoDeJuego();
+        // -------------------------------------------------
     }
 
+    // ... El resto de tus funciones (SeleccionarPieza, etc.) se quedan igual ...
 
     // ============================
     // SELECCIÓN DE PIEZA
@@ -43,45 +52,45 @@ public class GameManager : MonoBehaviour
 
     public void SeleccionarPieza(AtributosPieza pieza)
     {
-        // 1. CASO ESPECIAL: Si hacemos clic en la pieza que ya está seleccionada...
-        // La deseleccionamos y apagamos las luces.
+        if (pieza == null) return;
+
+        // --- BLOQUEO DE INPUT PARA CPU ---
+        // Cambiamos 'esPvCPU' por 'esModoCPU' para que coincida con tu script
+        if (GameController.Instance != null && GameController.Instance.esModoCPU)
+        {
+            if (gestorTurnos.TurnoActual == ColorPieza.NEGRO)
+            {
+                return; // Bloqueamos el clic si es turno de la CPU
+            }
+        }
+        // ----------------------------------
+
+        if (!gestorTurnos.EsTurnoDe(pieza.color))
+        {
+            if (piezaSeleccionada != null)
+            {
+                GameObject casillaEnemiga = gestorTablero.GetCasilla(pieza.posicionEnTablero);
+                if (casillaEnemiga != null)
+                {
+                    IntentarMoverA(casillaEnemiga);
+                }
+            }
+            return;
+        }
+
         if (piezaSeleccionada == pieza)
         {
             LimpiarSeleccion();
             return;
         }
 
-        // 2. LIMPIAR SELECCIÓN ANTERIOR
-        // Esto apaga las luces de la pieza vieja antes de encender las nuevas
         LimpiarSeleccion();
-
-        // 3. VALIDACIONES BÁSICAS
-        if (pieza == null)
-            return;
-
-        // Verificamos si es el turno correcto
-        if (!gestorTurnos.EsTurnoDe(pieza.color))
-            return;
-
-        // 4. NUEVA SELECCIÓN
         piezaSeleccionada = pieza;
 
-        // NUEVO: Avisar al panel para que muestre la info
-        if (panelInfoPieza != null)
-        {
-            panelInfoPieza.MostrarInfo(pieza);
-        }
-
+        if (panelInfoPieza != null) panelInfoPieza.MostrarInfo(pieza);
         movimientosPosibles = calculadorMovimientos.CalcularMovimientos(pieza);
-
-        // 5. MOSTRAR NUEVOS MOVIMIENTOS
         MostrarMovimientos();
     }
-
-
-    // ============================
-    // CLICK EN CASILLA
-    // ============================
 
     public void IntentarMoverA(GameObject casillaDestinoObj)
     {
@@ -94,38 +103,29 @@ public class GameManager : MonoBehaviour
 
         if (!movimientosPosibles.Contains(destino)) return;
 
-        // 1. Movemos la pieza (y capturamos si hay)
-        gestorMovimiento.MoverPieza(piezaSeleccionada, destino);
-
-        // 2. Verificamos promoción
-        gestorPromocion.VerificarPromocion(piezaSeleccionada);
-
-        // 3. Marcar que la pieza se movió este turno (importante para Estatuadorada)
-        piezaSeleccionada.seMovioEsteTurno = true;
-
-        // 4. LÓGICA DE DOBLE TURNO
-        // Restamos un movimiento al contador
-        piezaSeleccionada.movimientosRestantesEsteTurno--;
-
-        // Si todavía le quedan movimientos, NO cambiamos de turno
-        if (piezaSeleccionada.movimientosRestantesEsteTurno > 0)
-        {
-            Debug.Log($"A {piezaSeleccionada.name} le quedan {piezaSeleccionada.movimientosRestantesEsteTurno} movimientos.");
-            // Recalculamos movimientos posibles para el segundo movimiento
-            movimientosPosibles = calculadorMovimientos.CalcularMovimientos(piezaSeleccionada);
-            MostrarMovimientos(); // Actualizamos luces
-            return; // Salimos sin cambiar de turno
-        }
-
-        // 5. Si no le quedan movimientos, cambiamos de turno
-        gestorTurnos.CambiarTurno();
-        LimpiarSeleccion();
+        StartCoroutine(EjecutarMovimiento(casilla, destino));
     }
 
+    private IEnumerator EjecutarMovimiento(Casilla casilla, Vector2Int destino)
+    {
+        yield return StartCoroutine(gestorMovimiento.MoverPieza(piezaSeleccionada, destino));
 
-    // ============================
-    // VISUALIZACIÓN MOVIMIENTOS
-    // ============================
+        gestorPromocion.VerificarPromocion(piezaSeleccionada);
+        piezaSeleccionada.seMovioEsteTurno = true;
+
+        piezaSeleccionada.movimientosRestantesEsteTurno--;
+
+        if (piezaSeleccionada.movimientosRestantesEsteTurno > 0)
+        {
+            movimientosPosibles = calculadorMovimientos.CalcularMovimientos(piezaSeleccionada);
+            MostrarMovimientos();
+        }
+        else
+        {
+            gestorTurnos.CambiarTurno();
+            LimpiarSeleccion();
+        }
+    }
 
     void MostrarMovimientos()
     {
@@ -139,24 +139,18 @@ public class GameManager : MonoBehaviour
 
                 if (script != null)
                 {
-                    // LÓGICA PARA CAMBIAR DE COLOR:
-
-                    // Usamos la función GetPiezaEn que SÍ existe en tu GestorTablero
                     if (gestorTablero.GetPiezaEn(pos) != null)
                     {
-                        // Si hay una pieza, es una CAPTURA -> Color Rojo (o el que elijas)
                         script.Iluminar(materialCaptura);
                     }
                     else
                     {
-                        // Si no hay pieza, es un MOVIMIENTO NORMAL -> Color Verde (o el que tengas)
                         script.Iluminar(materialMovimiento);
                     }
                 }
             }
         }
     }
-
 
     public void LimpiarSeleccion()
     {
@@ -169,54 +163,40 @@ public class GameManager : MonoBehaviour
                 Casilla script = casilla.GetComponent<Casilla>();
 
                 if (script != null)
-                    script.Apagar(); // CORRECCIÓN
+                    script.Apagar();
             }
         }
 
         movimientosPosibles.Clear();
         piezaSeleccionada = null;
 
-        // NUEVO: Ocultar el panel al deseleccionar
         if (panelInfoPieza != null)
         {
             panelInfoPieza.OcultarInfo();
         }
     }
 
-
-    // ============================
-    // INICIALIZACIÓN TABLERO
-    // ============================
     public void InicializarConTablero(CrearCasillas creador)
     {
-        Debug.Log("GameManager inicializado con tablero");
-
-        // 1. Buscamos el GestorTablero si no está asignado
         if (gestorTablero == null)
         {
             gestorTablero = FindFirstObjectByType<GestorTablero>();
         }
 
-        // 2. PASAMOS LAS CASILLAS MANUALMENTE AL GESTOR
         if (gestorTablero != null && creador.casillas != null)
         {
             gestorTablero.ConfigurarCasillas(creador.casillas);
             gestorTablero.enabled = true;
 
-            // 3. AVISAMOS AL INICIALIZADOR DE PIEZAS
             if (InicializadorPiezas.instance != null)
             {
                 InicializadorPiezas.instance.IniciarColocacion();
             }
 
-            // --- NUEVA LÍNEA A AÑADIR ---
-            // 4. CONECTAMOS EL GESTOR DE TURNOS CON EL TABLERO
             if (gestorTurnos != null)
             {
                 gestorTurnos.Inicializar(gestorTablero.ObtenerRegistroCompleto());
             }
-            // -----------------------------
-
         }
         else
         {
@@ -224,17 +204,9 @@ public class GameManager : MonoBehaviour
         }
     }
 
-    // ============================
-    // ACCESO PUBLICO A SISTEMAS
-    // ============================
-
     public ColorPieza TurnoActual
     {
-        get
-        {
-            // Esto asume que 'gestorTurnos' no es nulo y tiene una propiedad pública llamada 'TurnoActual'
-            return gestorTurnos.TurnoActual;
-        }
+        get { return gestorTurnos.TurnoActual; }
     }
 
     public AtributosPieza ObtenerPiezaSeleccionada()
@@ -250,15 +222,10 @@ public class GameManager : MonoBehaviour
         }
     }
 
-    // ============================
-    // Finalizacion de partida
-    // ============================
-
     public void FinalizarPartida(ColorPieza perdedor)
     {
         if (juegoTerminado) return;
         juegoTerminado = true;
-        Debug.Log("PARTIDA TERMINADA");
 
         ColorPieza ganador = (perdedor == ColorPieza.BLANCO) ? ColorPieza.NEGRO : ColorPieza.BLANCO;
 
@@ -270,10 +237,36 @@ public class GameManager : MonoBehaviour
                 textoGanador.text = "¡Ganan las " + ganador + "!";
             }
         }
-        else
+    }
+
+    // --- NUEVAS FUNCIONES AL FINAL ---
+
+    private void VerificarModoDeJuego()
+    {
+        if (GameController.Instance != null)
         {
-            Debug.LogWarning("El panel de fin de juego no está asignado en el GameManager.");
+            if (GameController.Instance.esModoCPU)
+            {
+                Debug.Log("Modo: Player vs CPU");
+                if (enemyAI != null) enemyAI.enabled = true;
+            }
+            else
+            {
+                Debug.Log("Modo: Player vs Player");
+                if (enemyAI != null) enemyAI.enabled = false;
+            }
         }
     }
 
+    public void EjecutarMovimientoIA(AtributosPieza pieza, Vector2Int destino)
+    {
+        piezaSeleccionada = pieza;
+        movimientosPosibles = calculadorMovimientos.CalcularMovimientos(pieza);
+
+        GameObject casillaObj = gestorTablero.GetCasilla(destino);
+        if (casillaObj != null && movimientosPosibles.Contains(destino))
+        {
+            StartCoroutine(EjecutarMovimiento(casillaObj.GetComponent<Casilla>(), destino));
+        }
+    }
 }

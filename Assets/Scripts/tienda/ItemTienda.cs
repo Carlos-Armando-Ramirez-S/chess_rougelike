@@ -1,8 +1,10 @@
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
+using UnityEngine.EventSystems; // <--- NECESARIO para detectar el ratón
 
-public class ItemTienda : MonoBehaviour
+// Añadimos las interfaces al final de la clase
+public class ItemTienda : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
 {
     [Header("Configuración")]
     public ItemData datosDelItem;
@@ -27,23 +29,32 @@ public class ItemTienda : MonoBehaviour
     }
 
     // --- FUNCIÓN PARA EL BOTÓN (Void) ---
-    // Esta es la que seleccionarás en el OnClick del botón
     public void IntentarComprar()
     {
         bool exito = ComprarItem();
 
-        // Si la compra fue exitosa, el item se destruye solo
         if (exito)
         {
+            // 1. Ocultar el Pop-up (lo arreglamos antes)
+            if (GestorHerramientas.instance != null)
+            {
+                GestorHerramientas.instance.OcultarTooltip();
+            }
+
+            // 2. ¡NUEVO! Forzar al indicador a aparecer ahora mismo
+            if (IndicadorAcumulacion.instance != null)
+            {
+                IndicadorAcumulacion.instance.VerificarYActualizar();
+            }
+
+            // 3. Destruir el item de la tienda
             Destroy(gameObject);
         }
     }
 
     // --- FUNCIÓN DE LÓGICA (Bool) ---
-    // Esta la usa el ShopManager
     public bool ComprarItem()
     {
-        // 1. Verificaciones
         if (datosDelItem == null || GameManager.instance == null || MoneyManager.instance == null) return false;
 
         AtributosPieza pieza = GameManager.instance.ObtenerPiezaSeleccionada();
@@ -69,13 +80,33 @@ public class ItemTienda : MonoBehaviour
             return false;
         }
 
-        // --- COMPRA EXITOSA ---
+        // COMPRA EXITOSA
         MoneyManager.instance.GastarDinero(jugador, datosDelItem.costoItem);
         pieza.EquiparItem(datosDelItem);
         datosDelItem.EjecutarEfecto(pieza);
 
         Debug.Log($"<color=green>¡Has comprado {datosDelItem.nombreItem}!</color>");
 
-        return true; // Devolvemos TRUE
+        return true;
+    }
+
+    // --- LÓGICA DEL TOOLTIP (POP-UP) ---
+
+    public void OnPointerEnter(PointerEventData eventData)
+    {
+        // Al entrar el ratón, mostramos el tooltip
+        if (datosDelItem != null && GestorHerramientas.instance != null)
+        {
+            GestorHerramientas.instance.MostrarTooltip(datosDelItem.nombreItem, datosDelItem.descripcion);
+        }
+    }
+
+    public void OnPointerExit(PointerEventData eventData)
+    {
+        // Al salir, ocultamos
+        if (GestorHerramientas.instance != null)
+        {
+            GestorHerramientas.instance.OcultarTooltip();
+        }
     }
 }

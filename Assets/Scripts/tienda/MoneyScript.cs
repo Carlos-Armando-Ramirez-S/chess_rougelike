@@ -14,7 +14,7 @@ public class MoneyManager : MonoBehaviour
     public Text textoDineroNegras;
 
     [Header("Tienda")]
-    public GameObject tiendaPanel;
+    public GameObject tiendaPanel; // Mantenemos la referencia para saber si está activa
     public GameObject infoPanel;
 
     [Header("Cargas de Items")]
@@ -42,13 +42,6 @@ public class MoneyManager : MonoBehaviour
         ActualizarUIDinero();
     }
 
-    // --- NUEVO MÉTODO AÑADIDO ---
-    /// <summary>
-    /// Intenta gastar una cantidad de dinero para un jugador específico.
-    /// </summary>
-    /// <param name="jugador">El jugador que gasta el dinero.</param>
-    /// <param name="cantidad">La cantidad a gastar.</param>
-    /// <returns>True si el gasto fue exitoso, False si no había suficiente dinero.</returns>
     public bool GastarDinero(ColorPieza jugador, int cantidad)
     {
         if (jugador == ColorPieza.BLANCO && dineroBlancas >= cantidad)
@@ -64,7 +57,7 @@ public class MoneyManager : MonoBehaviour
             return true;
         }
 
-        return false; // No hay suficiente dinero
+        return false;
     }
 
     private void ActualizarUIDinero()
@@ -74,10 +67,35 @@ public class MoneyManager : MonoBehaviour
     }
     #endregion
 
+    // En MoneyManager.cs
+
     #region Lógica de la Tienda
     public void MostrarOcultarTienda()
     {
-        if (tiendaPanel != null) tiendaPanel.SetActive(!tiendaPanel.activeSelf);
+        // --- NUEVO: BLOQUEO DE TURNO ---
+        // Si no es el turno del Jugador (Blancas), no dejamos abrir la tienda
+        if (GameManager.instance.TurnoActual != ColorPieza.BLANCO)
+        {
+            Debug.Log("¡Solo puedes usar la tienda en tu turno!");
+            return;
+        }
+        // -------------------------------
+
+        if (ShopManager.instance != null && tiendaPanel != null)
+        {
+            if (tiendaPanel.activeSelf)
+            {
+                ShopManager.instance.CerrarTienda();
+            }
+            else
+            {
+                ShopManager.instance.AbrirTienda();
+            }
+        }
+        else
+        {
+            if (tiendaPanel != null) tiendaPanel.SetActive(!tiendaPanel.activeSelf);
+        }
     }
     #endregion
 
@@ -88,23 +106,19 @@ public class MoneyManager : MonoBehaviour
     }
     #endregion
 
-    // --- NUEVO MÉTODO ---
-    /// <summary>
-    /// Devuelve la cantidad de oro que tiene un jugador específico.
-    /// </summary>
     public int GetDinero(ColorPieza jugador)
     {
         if (jugador == ColorPieza.BLANCO)
         {
             return dineroBlancas;
         }
-        else // Asumimos que solo hay BLANCO y NEGRO
+        else
         {
             return dineroNegras;
         }
     }
 
-    // --- NUEVAS FUNCIONES Cargas de items ---
+    #region Cargas de items
     public void SumarCarga(ColorPieza color, int cantidad)
     {
         if (color == ColorPieza.BLANCO)
@@ -130,4 +144,5 @@ public class MoneyManager : MonoBehaviour
         if (color == ColorPieza.BLANCO) cargasBlanco = 0;
         else cargasNegro = 0;
     }
+    #endregion
 }

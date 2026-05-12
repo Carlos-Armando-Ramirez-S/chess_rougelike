@@ -8,31 +8,91 @@ public class GestorTurnos : MonoBehaviour
     [SerializeField] private TurnAnnouncer anunciadorTurno;
     [SerializeField] private TMP_Text textoTurnoHUD;
 
+    // --- NUEVA UI: TEMPORIZADOR ---
+    [Tooltip("Arrastra aquí un texto para mostrar el tiempo/bonus")]
+    [SerializeField] private TMP_Text textoTemporizador;
+    // ------------------------------
+
     [Header("Referencias")]
     [SerializeField] private ShopManager shopManager;
-
-    // --- NUEVA REFERENCIA ---
-    [Tooltip("Arrastra aquí el objeto que tiene el script IndicadorAcumulacion")]
     [SerializeField] private IndicadorAcumulacion indicadorCargador;
-    // ------------------------
 
-    [Header("Estado del turno")]
+    [Header("Configuración de Velocidad")]
+    [Tooltip("Tiempo máximo en segundos para obtener bonus.")]
+    public float tiempoMaximo = 15f;
+    [Tooltip("Oro máximo por mover rápido.")]
+    public int oroMaximo = 5;
+
+    // Variables de estado
     private ColorPieza turnoActual = ColorPieza.BLANCO;
-    public ColorPieza TurnoActual
-    {
-        get { return turnoActual; }
-    }
+    public ColorPieza TurnoActual => turnoActual;
 
     private Dictionary<Vector2Int, AtributosPieza> registroDePiezas;
+
+    // --- NUEVAS VARIABLES DE TIEMPO ---
+    private float tiempoInicioTurno;
+    private bool turnoActivo = false;
+    // ----------------------------------
+
+    void Update()
+    {
+        if (turnoActivo)
+        {
+            float tiempoTranscurrido = Time.time - tiempoInicioTurno;
+            float proporcion = tiempoTranscurrido / tiempoMaximo;
+            if (proporcion > 1f) proporcion = 1f;
+
+            // Usamos la misma fórmula que arriba para que el jugador vea lo que va a ganar
+            int oroActual = 1 + Mathf.FloorToInt((oroMaximo - 1) * (1f - proporcion));
+
+            if (textoTemporizador != null)
+            {
+                textoTemporizador.text = $"Bonus: +{oroActual}g";
+
+                // Colores: Verde al inicio, Rojo al final
+                if (proporcion > 0.8f)
+                    textoTemporizador.color = Color.red;
+                else if (proporcion > 0.4f)
+                    textoTemporizador.color = Color.yellow;
+            }
+        }
+    }
 
     public void Inicializar(Dictionary<Vector2Int, AtributosPieza> registro)
     {
         registroDePiezas = registro;
+        // Inicializamos el turno (asumimos que empieza Blanco, pero no activamos el timer hasta el primer cambio)
     }
 
     public void CambiarTurno()
     {
         ColorPieza jugadorQueTermina = turnoActual;
+
+        // --- CÁLCULO DE ORO (Mín 1, Máx 5) ---
+        float tiempoTotal = Time.time - tiempoInicioTurno;
+
+        // 1. Calculamos el porcentaje de tiempo usado (0.0 a 1.0)
+        float proporcion = tiempoTotal / tiempoMaximo;
+
+        // 2. Limitamos para no pasarnos
+        if (proporcion > 1f) proporcion = 1f;
+
+        // 3. Fórmula invertida con mínimo:
+        // Rango de oro = 5 (Max) - 1 (Min) = 4 puntos variables.
+        // Oro = 1 (Base) + (4 * (1 - proporcion))
+
+        // Ejemplo:
+        // t=0s (prop=0) -> 1 + 4 = 5 oro.
+        // t=5s (prop=1) -> 1 + 0 = 1 oro.
+
+        int oroGanado = 1 + Mathf.FloorToInt((oroMaximo - 1) * (1f - proporcion));
+
+        if (MoneyManager.instance != null)
+        {
+            MoneyManager.instance.AnadirDinero(jugadorQueTermina, oroGanado);
+            Debug.Log($"<color=yellow>{jugadorQueTermina} tardó {tiempoTotal:F1}s. Ganó: {oroGanado} oro.</color>");
+        }
+        // ------------------------------------
 
         // --- Lógica de Recompensas (Estatua Dorada) ---
         if (registroDePiezas != null)
@@ -45,7 +105,6 @@ public class GestorTurnos : MonoBehaviour
                     if (pieza.DebeRecibirRecompensaEstatuadorada())
                     {
                         MoneyManager.instance.AnadirDinero(jugadorQueTermina, 1);
-                        Debug.Log($"{pieza.name} generó 1 oro por Estatuadorada.");
                     }
                 }
             }
@@ -55,26 +114,16 @@ public class GestorTurnos : MonoBehaviour
         turnoActual = (turnoActual == ColorPieza.BLANCO) ? ColorPieza.NEGRO : ColorPieza.BLANCO;
         Debug.Log($"--- Ahora es el turno de las piezas {turnoActual} ---");
 
-        // --- NUEVA LÓGICA: ORO AL INICIAR TURNO ---
-        // Ahora le damos el oro al jugador que EMPIEZA su turno
-        if (MoneyManager.instance != null)
-        {
-            MoneyManager.instance.AnadirDinero(turnoActual, 1);
-            Debug.Log($"<color=yellow>+1 oro por inicio de turno para {turnoActual}.</color>");
-        }
-        // --------------------------------------------
-
         ResetearContadoresDeMovimiento(turnoActual);
         ResetearEstadoMovimiento(turnoActual);
 
         ActualizarUI();
+        if (shopManager != null) shopManager.RefrescarTienda();
+        if (indicadorCargador != null) indicadorCargador.VerificarYActualizar();
 
-        if (shopManager != null)
-            shopManager.RefrescarTienda();
-
-        // Avisar al indicador de cargas
-        if (indicadorCargador != null)
-            indicadorCargador.VerificarYActualizar();
+        // Reiniciar Temporizador
+        tiempoInicioTurno = Time.time;
+        turnoActivo = true;
     }
 
     private void ResetearContadoresDeMovimiento(ColorPieza colorJugador)
@@ -86,17 +135,14 @@ public class GestorTurnos : MonoBehaviour
             {
                 kvp.Value.movimientosRestantesEsteTurno = 1;
 
-                // --- NUEVA LÓGICA: AVISAR A LOS ITEMS ---
-                // Revisamos si la pieza tiene items equipados
+                // Avisar a los items
                 if (kvp.Value.itemsEquipados != null)
                 {
                     foreach (ItemData item in kvp.Value.itemsEquipados)
                     {
-                        // Llamamos a la función del item
                         item.AlIniciarTurno(kvp.Value);
                     }
                 }
-                // ---------------------------------------
             }
         }
     }
@@ -118,6 +164,7 @@ public class GestorTurnos : MonoBehaviour
 
     public void DetenerTurnos()
     {
+        turnoActivo = false;
         enabled = false;
     }
 

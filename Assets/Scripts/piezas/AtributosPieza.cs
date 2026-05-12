@@ -1,5 +1,6 @@
 using UnityEngine;
-using System.Collections.Generic; // NECESARIO para usar Listas
+using System.Collections.Generic;
+using UnityEngine.EventSystems; // <--- NECESARIO
 
 public enum ColorPieza
 {
@@ -31,15 +32,9 @@ public class AtributosPieza : MonoBehaviour
     [Header("Estado de Estatuadorada")]
     public bool estatuadoradaActiva = false;
 
-    // Variable existente (se reinicia cada turno)
-    public bool seMovioEsteTurno = false;
-
-    // --- NUEVA VARIABLE AÑADIDA ---
-    // Esta variable NO se reinicia. Guarda si la pieza se ha movido alguna vez en toda la partida.
-    // Es vital para que el peón solo pueda saltar 2 casillas en su primer movimiento.
     [Header("Estado de Movimiento Global")]
     public bool yaSeMovioEnPartida = false;
-    // ------------------------------
+    public bool seMovioEsteTurno = false;
 
     [Header("Movimiento Extra")]
     public int movimientosRestantesEsteTurno = 1;
@@ -47,38 +42,51 @@ public class AtributosPieza : MonoBehaviour
     [Header("Ataque Flanqueo")]
     public bool ataqueFlanqueoActivo = false;
 
+    [Header("Inventario")]
+    public List<ItemData> itemsEquipados = new List<ItemData>();
+    public int limiteItems = 4;
+
+    [Header("Visual Item")]
+    private GameObject iconoItemVisual; // Referencia al sprite 2D
 
     private void OnMouseDown()
     {
+        // --- AÑADE ESTA LÍNEA ---
+        // Si el ratón está sobre algún elemento UI (Panel, Botón, Texto), salimos.
+        if (EventSystem.current.IsPointerOverGameObject()) return;
+        // ------------------------
+
         if (GameManager.instance != null)
         {
             GameManager.instance.SeleccionarPieza(this);
         }
     }
 
+    // Función para que InicializadorPiezas nos pase el icono
+    public void SetIconoVisual(GameObject icono)
+    {
+        iconoItemVisual = icono;
+        iconoItemVisual.SetActive(false); // Empieza apagado
+    }
 
-    [Header("Visual Item (Opcional)")]
-    public SpriteRenderer iconoItemVisual; // Arrastra aquí un hijo que sirva de icono si quieres
-
-    [Header("Inventario")]
-    public List<ItemData> itemsEquipados = new List<ItemData>();
-    public int limiteItems = 4;
-
-    // Esta función la llamará la tienda para intentar equipar el item
+    // Función para equipar items
     public bool EquiparItem(ItemData nuevoItem)
     {
-        // 1. Verificar si alcanzó el límite
         if (itemsEquipados.Count >= limiteItems)
         {
             Debug.Log($"{gameObject.name} no puede cargar más items (Límite: {limiteItems}).");
             return false;
         }
 
-        // 2. Añadir a la lista
         itemsEquipados.Add(nuevoItem);
 
-        Debug.Log($"<color=cyan>{gameObject.name} ha equipado: {nuevoItem.nombreItem} ({itemsEquipados.Count}/{limiteItems})</color>");
+        // ENCENDER ICONO
+        if (iconoItemVisual != null)
+        {
+            iconoItemVisual.SetActive(true);
+        }
 
+        Debug.Log($"<color=cyan>{gameObject.name} ha equipado: {nuevoItem.nombreItem} ({itemsEquipados.Count}/{limiteItems})</color>");
         return true;
     }
 
@@ -94,7 +102,6 @@ public class AtributosPieza : MonoBehaviour
             ActualizarValorOro();
         }
     }
-
 
     // =========================
     // EFECTOS
@@ -118,23 +125,15 @@ public class AtributosPieza : MonoBehaviour
         Debug.Log($"<color=red>Ataque Flanqueo ACTIVADO en {gameObject.name}</color>");
     }
 
-
-    // =========================
-    // ESTATUADORADA
-    // =========================
-
     public bool DebeRecibirRecompensaEstatuadorada()
     {
-        // Ahora solo verifica si tiene la estatua activa, sin importar si se movió
         if (estatuadoradaActiva)
         {
             Debug.Log($"<color=green>Recompensa Estatuadorada para {gameObject.name}</color>");
             return true;
         }
-
         return false;
     }
-
 
     // =========================
     // VALOR EN ORO
@@ -144,29 +143,12 @@ public class AtributosPieza : MonoBehaviour
     {
         switch (tipo)
         {
-            case TipoPieza.Peon:
-                valorOro = 3;
-                break;
-
-            case TipoPieza.Torre:
-                valorOro = 6;
-                break;
-
-            case TipoPieza.Caballo:
-                valorOro = 10;
-                break;
-
-            case TipoPieza.Alfil:
-                valorOro = 15;
-                break;
-
-            case TipoPieza.Reina:
-                valorOro = 20;
-                break;
-
-            case TipoPieza.Rey:
-                valorOro = 50;
-                break;
+            case TipoPieza.Peon: valorOro = 3; break;
+            case TipoPieza.Torre: valorOro = 6; break;
+            case TipoPieza.Caballo: valorOro = 10; break;
+            case TipoPieza.Alfil: valorOro = 15; break;
+            case TipoPieza.Reina: valorOro = 20; break;
+            case TipoPieza.Rey: valorOro = 50; break;
         }
     }
 
@@ -177,9 +159,8 @@ public class AtributosPieza : MonoBehaviour
     [Header("Cargador Activo")]
     public bool tieneCargador = false;
     public int cargasActuales = 0;
-    private ItemCargador datosCargador; // Referencia al ScriptableObject para leer cuánto sumar
+    private ItemCargador datosCargador;
 
-    // Esta función la llama el ItemCargador al comprarlo
     public void ActivarCargador(ItemCargador datos)
     {
         tieneCargador = true;
@@ -187,21 +168,15 @@ public class AtributosPieza : MonoBehaviour
         Debug.Log($"Cargador equipado. Cada captura dará {datos.cargasPorCaptura} cargas.");
     }
 
-    // Esta función la llamará el GestorCombate cuando captures una pieza
     public void SumarCargaCaptura()
     {
-        // 1. Verificamos si la pieza tiene el item equipado
         if (!tieneCargador || datosCargador == null) return;
-
-        // 2. Sumamos las cargas al contador GLOBAL del jugador (en MoneyManager)
         if (MoneyManager.instance != null)
         {
             MoneyManager.instance.SumarCarga(this.color, datosCargador.cargasPorCaptura);
         }
-
-        // NOTA: Hemos eliminado la parte de "if(cargas >= necesarias)" porque 
-        // ahora el item es pasivo y no se activa solo.
     }
+
     // =========================
     // ESCUDO
     // =========================
@@ -209,7 +184,6 @@ public class AtributosPieza : MonoBehaviour
     public void ActivarEscudoEnPieza()
     {
         tieneEscudo = true;
-
         Debug.Log($"<color=cyan>Escudo ACTIVADO en {gameObject.name}</color>");
     }
 
@@ -218,12 +192,9 @@ public class AtributosPieza : MonoBehaviour
         if (tieneEscudo)
         {
             Debug.Log($"<color=yellow>{gameObject.name} usó su ESCUDO</color>");
-
             tieneEscudo = false;
-
             return true;
         }
-
         return false;
     }
 }

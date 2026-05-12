@@ -5,21 +5,21 @@ public class GeneradorTablerosFantasmas : MonoBehaviour
     [Header("Configuración")]
     public GameObject prefabTableroFantasma;
     public Transform contenedorFantasmas;
-    public Transform centroTablero; // Tu tablero real
+    public Transform centroTablero;
 
-    [Header("Posiciones")]
-    [Tooltip("Qué tan lejos aparecen (horizontalmente)")]
-    public float radioMinimo = 80f; // Mucho más lejos
+    public float radioMinimo = 80f;
     public float radioMaximo = 200f;
+    public float alturaMinima = 50f;
+    public float alturaMaxima = 150f;
 
-    [Tooltip("Diferencia de altura")]
-    public float offsetAlturaMin = -50f; // Pueden estar abajo
-    public float offsetAlturaMax = 100f; // O arriba
-
-    [Header("Comportamiento")]
-    public float velocidadSubida = 10f; // Simulan que tú caes rápido
-    public float tiempoEntreGeneracion = 5f;
+    public float tiempoEntreGeneracion = 10f;
     public int maxTableros = 10;
+
+    [Header("Separación")]
+    [Tooltip("Distancia mínima que debe haber entre una torre y otra")]
+    public float distanciaMinima = 15f;
+    [Tooltip("Cuántos intentos hace para encontrar un lugar libre antes de rendirse")]
+    public int intentosMaximos = 10;
 
     private float timer;
 
@@ -35,48 +35,73 @@ public class GeneradorTablerosFantasmas : MonoBehaviour
     void Update()
     {
         timer += Time.deltaTime;
-
         if (timer >= tiempoEntreGeneracion)
         {
             if (contenedorFantasmas.childCount < maxTableros)
             {
-                CrearTableroFantasma();
+                CrearTablero();
             }
             timer = 0;
         }
     }
 
-    void CrearTableroFantasma()
+    void CrearTablero()
     {
         if (centroTablero == null || prefabTableroFantasma == null) return;
 
-        Vector3 posTablero = centroTablero.position;
+        Vector3 posicionValida = Vector3.zero;
+        bool encontroSitio = false;
 
-        // 1. Posición en anillo lejano
-        Vector2 dir2D = Random.insideUnitCircle.normalized;
-        float distancia = Random.Range(radioMinimo, radioMaximo);
+        // Intentamos encontrar un sitio libre 'intentosMaximos' veces
+        for (int i = 0; i < intentosMaximos; i++)
+        {
+            // 1. Generamos una posición aleatoria
+            Vector2 dir2D = Random.insideUnitCircle.normalized;
+            float distancia = Random.Range(radioMinimo, radioMaximo);
 
-        float posX = posTablero.x + dir2D.x * distancia;
-        float posZ = posTablero.z + dir2D.y * distancia;
-        float posY = posTablero.y + Random.Range(offsetAlturaMin, offsetAlturaMax);
+            float posX = centroTablero.position.x + dir2D.x * distancia;
+            float posZ = centroTablero.position.z + dir2D.y * distancia;
+            float posY = centroTablero.position.y + Random.Range(alturaMinima, alturaMaxima);
 
-        Vector3 spawnPos = new Vector3(posX, posY, posZ);
+            Vector3 posicionCandidata = new Vector3(posX, posY, posZ);
 
-        // 2. Instanciar
-        GameObject nuevoFantasma = Instantiate(prefabTableroFantasma, spawnPos, Quaternion.identity, contenedorFantasmas);
+            // 2. Verificamos si está muy cerca de otras torres
+            if (EsPosicionValida(posicionCandidata))
+            {
+                posicionValida = posicionCandidata;
+                encontroSitio = true;
+                break; // ¡Encontramos sitio! Salimos del bucle
+            }
+        }
 
-        // 3. Rotación Variada (CLAVE)
-        // Rotamos en Y para que no miren al mismo lado
-        float rotY = Random.Range(0, 360);
-        // Añadimos una pequeña inclinación (X o Z) para que parezca que está flotando inestable
-        float rotX = Random.Range(-5, 5);
-        float rotZ = Random.Range(-5, 5);
-        nuevoFantasma.transform.rotation = Quaternion.Euler(rotX, rotY, rotZ);
+        // 3. Si encontramos un sitio bueno, instanciamos
+        if (encontroSitio)
+        {
+            Instantiate(prefabTableroFantasma, posicionValida, Quaternion.identity, contenedorFantasmas);
+        }
+        else
+        {
+            // Opcional: Podrías imprimir un mensaje si no encontró sitio
+            Debug.Log("No se encontró espacio libre para la torre fantasma en este intento.");
+        }
+    }
 
-        // 4. Movimiento (Hacia ARRIBA)
-        MovimientoSimple movimiento = nuevoFantasma.AddComponent<MovimientoSimple>();
-        movimiento.Configurar(Vector3.up, velocidadSubida);
+    // Función que revisa si la posición está lejos de todas las torres existentes
+    bool EsPosicionValida(Vector3 nuevaPosicion)
+    {
+        foreach (Transform hijo in contenedorFantasmas)
+        {
+            // Ignoramos diferencia de altura (eje Y) para el cálculo, 
+            // así solo comparamos la distancia en el suelo (X y Z).
+            Vector3 posExistente = new Vector3(hijo.position.x, nuevaPosicion.y, hijo.position.z);
 
-        Destroy(nuevoFantasma, 45f);
+            float distancia = Vector3.Distance(nuevaPosicion, posExistente);
+
+            if (distancia < distanciaMinima)
+            {
+                return false; // Está muy cerca de alguien
+            }
+        }
+        return true; // Está libre
     }
 }
