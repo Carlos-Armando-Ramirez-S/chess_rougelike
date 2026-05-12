@@ -1,6 +1,7 @@
 using UnityEngine;
 using System.Collections.Generic;
 
+
 public class InicializadorPiezas : MonoBehaviour
 {
     #region Singleton
@@ -29,23 +30,17 @@ public class InicializadorPiezas : MonoBehaviour
     [Header("Materiales para las Piezas")]
     public Material materialBlanco, materialNegro;
 
+    [Header("Visual Items")]
+    [Tooltip("Arrastra aquí el prefab del icono que creaste")]
+    public GameObject prefabIconoItem; // <--- NUEVA VARIABLE
+
     private Dictionary<TipoPieza, Mesh> mallaDePiezas = new Dictionary<TipoPieza, Mesh>();
 
     private GestorTablero gestorTablero;
 
     void Start()
     {
-        /*gestorTablero = FindObjectOfType<GestorTablero>();
-
-        if (gestorTablero == null)
-        {
-            Debug.LogError("ERROR: No se pudo obtener la referencia del GestorTablero.");
-            return;
-        }*/
-
         InicializarMallas();
-
-        //Invoke(nameof(ColocarPiezas), 0.1f);
     }
     public void IniciarColocacion()
     {
@@ -88,60 +83,6 @@ public class InicializadorPiezas : MonoBehaviour
         CrearPiezaEn(3, 7, reinaPrefab, TipoPieza.Reina, ColorPieza.NEGRO);
         CrearPiezaEn(4, 7, reyPrefab, TipoPieza.Rey, ColorPieza.NEGRO);
     }
-
-    /*void CrearPiezaEn(int x, int y, GameObject prefabPieza, TipoPieza tipo, ColorPieza color)
-    {
-        if (prefabPieza == null) return;
-
-        Vector2Int posicion = new Vector2Int(x, y);
-        GameObject casilla = gestorTablero.GetCasilla(posicion);
-
-        if (casilla == null) return;
-
-        Vector3 posicionCasilla = casilla.transform.position;
-
-        Renderer rendererCasilla = casilla.GetComponent<Renderer>();
-        float topCasilla = rendererCasilla.bounds.max.y;
-
-        GameObject nuevaPieza = Instantiate(prefabPieza);
-
-        Renderer rendererPieza = nuevaPieza.GetComponent<Renderer>();
-        float bottomPieza = rendererPieza.bounds.min.y;
-
-        float offset = topCasilla - bottomPieza;
-
-        nuevaPieza.transform.position += new Vector3(
-            posicionCasilla.x - nuevaPieza.transform.position.x,
-            offset,
-            posicionCasilla.z - nuevaPieza.transform.position.z
-        );
-
-        nuevaPieza.transform.SetParent(casilla.transform, true);
-
-        Rigidbody rb = nuevaPieza.AddComponent<Rigidbody>();
-        rb.useGravity = false;
-        rb.isKinematic = true;
-
-        nuevaPieza.AddComponent<MeshCollider>();
-
-        Renderer renderer = nuevaPieza.GetComponent<Renderer>();
-        if (renderer != null)
-        {
-            renderer.material = (color == ColorPieza.BLANCO)
-                ? materialBlanco
-                : materialNegro;
-        }
-
-        AtributosPieza atributos = nuevaPieza.AddComponent<AtributosPieza>();
-        atributos.tipo = tipo;
-        atributos.color = color;
-        atributos.posicionEnTablero = posicion;
-        atributos.ActualizarValorOro();
-
-        // Registro correcto en el tablero
-        gestorTablero.RegistrarPieza(atributos, posicion);
-    }*/
-
     void CrearPiezaEn(int x, int y, GameObject prefabPieza, TipoPieza tipo, ColorPieza color)
     {
         if (prefabPieza == null) return;
@@ -220,6 +161,22 @@ public class InicializadorPiezas : MonoBehaviour
         atributos.color = color;
         atributos.posicionEnTablero = posicion;
         atributos.ActualizarValorOro();
+
+        // --- NUEVA LÓGICA: AÑADIR ICONO DE ITEM ---
+        if (prefabIconoItem != null)
+        {
+            GameObject icono = Instantiate(prefabIconoItem, nuevaPieza.transform);
+
+            // ALTURA: Probemos con 0.3 unidades (muy pegado a la cabeza)
+            icono.transform.localPosition = new Vector3(0, 0.05f, 0);
+
+            // ESCALA: 0.1 unidades (tamaño de una canica pequeña)
+            icono.transform.localScale = new Vector3(0.01f, 0.01f, 0.01f);
+
+            icono.SetActive(false);
+            atributos.SetIconoVisual(icono);
+        }
+        // -----------------------------------------
 
         gestorTablero.RegistrarPieza(atributos, posicion);
     }

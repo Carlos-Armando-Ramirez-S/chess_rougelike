@@ -5,6 +5,15 @@ using UnityEngine.EventSystems; // Necesario para detectar el ratón
 // Añadimos las interfaces para detectar la entrada del ratón
 public class IndicadorAcumulacion : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
 {
+
+    public static IndicadorAcumulacion instance { get; private set; }
+
+    void Awake()
+    {
+        if (instance != null && instance != this) Destroy(this.gameObject);
+        else instance = this;
+    }
+
     [Header("Referencias UI")]
     public GameObject contenedorVisual;
     public Image imagenRelleno;
