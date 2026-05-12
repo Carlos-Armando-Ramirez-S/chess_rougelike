@@ -4,13 +4,13 @@ public class GestorAmbientacion : MonoBehaviour
 {
     [Header("Referencias")]
     public Light sol;                 // Arrastra tu Luz Direccional
-    public Camera camaraPrincipal;    // Arrastra tu Cámara principal aquí
+    public Camera camaraPrincipal;    // Arrastra tu Cï¿½mara principal aquï¿½
 
     [Header("Referencias Adicionales")]
-    public Renderer abismoRenderer; // Arrastra aquí tu plano "AbismoNubes"
+    public Renderer abismoRenderer; // Arrastra aquï¿½ tu plano "AbismoNubes"
     private Material materialAbismo;
 
-    [Header("Límites de Piezas (Cantidad Restante)")]
+    [Header("Lï¿½mites de Piezas (Cantidad Restante)")]
     [Tooltip("Si quedan menos de estas piezas, empieza la fase Fuerte")]
     public int limitePiezasFuerte = 20;
 
@@ -32,17 +32,23 @@ public class GestorAmbientacion : MonoBehaviour
     public GameObject[] objetosFuertes;
     public GameObject[] objetosCaos;
 
+    [Header("Audio")]
+    public AudioSource audioSource;
+    public AudioClip musicaTranquila;
+    public AudioClip musicaFuerte;
+    public AudioClip musicaCaos;
+
     private int estadoActual = 0;
     private float timer;
 
     void Start()
     {
-        // Si no arrastraste la cámara, intentamos buscarla automáticamente
+        // Si no arrastraste la cï¿½mara, intentamos buscarla automï¿½ticamente
         if (camaraPrincipal == null) camaraPrincipal = Camera.main;
 
         // Inicializar colores
         if (camaraPrincipal != null)
-            camaraPrincipal.backgroundColor = colorTranquilo; // CORREGIDO AQUÍ
+            camaraPrincipal.backgroundColor = colorTranquilo; // CORREGIDO AQUï¿½
 
         // Guardamos referencia al material del abismo
         if (abismoRenderer != null)
@@ -58,6 +64,7 @@ public class GestorAmbientacion : MonoBehaviour
         RenderSettings.fogEndDistance = 200f;
 
         CambiarEstadoVisual(0);
+        CambiarMusica(0);
     }
 
     void Update()
@@ -69,10 +76,10 @@ public class GestorAmbientacion : MonoBehaviour
             VerificarCantidadDePiezas();
         }
 
-        // Transición suave de colores
+        // Transiciï¿½n suave de colores
         Color colorObjetivo = ObtenerColorObjetivo();
 
-        // 1. Cambiar Fondo de Cámara
+        // 1. Cambiar Fondo de Cï¿½mara
         if (camaraPrincipal != null)
         {
             camaraPrincipal.backgroundColor = Color.Lerp(camaraPrincipal.backgroundColor, colorObjetivo, Time.deltaTime * 0.5f);
@@ -97,7 +104,7 @@ public class GestorAmbientacion : MonoBehaviour
                 );
             }
         }
-        // --- NUEVO: TRANSICIÓN DEL ABISMO ---
+        // --- NUEVO: TRANSICIï¿½N DEL ABISMO ---
         if (materialAbismo != null)
         {
             // Cambiamos el color del material
@@ -111,7 +118,7 @@ public class GestorAmbientacion : MonoBehaviour
             Vector2 offset = new Vector2(Time.time * velocidad, 0);
             materialAbismo.mainTextureOffset = offset;
 
-            // Tu código anterior de color...
+            // Tu cï¿½digo anterior de color...
             // materialAbismo.color = Color.Lerp...
         }
     }
@@ -121,18 +128,18 @@ public class GestorAmbientacion : MonoBehaviour
         AtributosPieza[] piezasVivas = FindObjectsByType<AtributosPieza>(FindObjectsSortMode.None);
         int cantidadTotal = piezasVivas.Length;
 
-        // Lógica de Estados
+
         if (cantidadTotal < limitePiezasCaos && estadoActual != 2)
         {
-            CambiarEstadoVisual(2); // Caos
+            CambiarEstadoVisual(2);
         }
         else if (cantidadTotal < limitePiezasFuerte && cantidadTotal >= limitePiezasCaos && estadoActual != 1)
         {
-            CambiarEstadoVisual(1); // Fuerte
+            CambiarEstadoVisual(1);
         }
         else if (cantidadTotal >= limitePiezasFuerte && estadoActual != 0)
         {
-            CambiarEstadoVisual(0); // Tranquilo
+            CambiarEstadoVisual(0);
         }
     }
 
@@ -145,6 +152,30 @@ public class GestorAmbientacion : MonoBehaviour
             default: return colorTranquilo;
         }
     }
+    void CambiarMusica(int estado)
+    {
+        if (audioSource == null) return;
+
+        AudioClip nuevaMusica = null;
+
+        switch (estado)
+        {
+            case 0:
+                nuevaMusica = musicaTranquila;
+                break;
+            case 1:
+                nuevaMusica = musicaFuerte;
+                break;
+            case 2:
+                nuevaMusica = musicaCaos;
+                break;
+        }
+
+        if (audioSource.clip == nuevaMusica) return;
+
+        audioSource.clip = nuevaMusica;
+        audioSource.Play();
+    }
 
     void CambiarEstadoVisual(int nuevoEstado)
     {
@@ -155,6 +186,7 @@ public class GestorAmbientacion : MonoBehaviour
         ActivarGrupo(objetosTranquilos, nuevoEstado == 0);
         ActivarGrupo(objetosFuertes, nuevoEstado == 1);
         ActivarGrupo(objetosCaos, nuevoEstado == 2);
+        CambiarMusica(nuevoEstado);
     }
 
     void ActivarGrupo(GameObject[] lista, bool estado)
@@ -162,4 +194,5 @@ public class GestorAmbientacion : MonoBehaviour
         if (lista == null) return;
         foreach (var obj in lista) if (obj != null) obj.SetActive(estado);
     }
+
 }
