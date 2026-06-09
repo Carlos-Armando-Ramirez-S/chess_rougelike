@@ -33,7 +33,6 @@ public class GestorAmbientacion : MonoBehaviour
     public GameObject[] objetosCaos;
 
     [Header("Audio")]
-    public AudioSource audioSource;
     public AudioClip musicaTranquila;
     public AudioClip musicaFuerte;
     public AudioClip musicaCaos;
@@ -154,27 +153,24 @@ public class GestorAmbientacion : MonoBehaviour
     }
     void CambiarMusica(int estado)
     {
-        if (audioSource == null) return;
-
         AudioClip nuevaMusica = null;
 
         switch (estado)
         {
-            case 0:
-                nuevaMusica = musicaTranquila;
-                break;
-            case 1:
-                nuevaMusica = musicaFuerte;
-                break;
-            case 2:
-                nuevaMusica = musicaCaos;
-                break;
+            case 0: nuevaMusica = musicaTranquila; break;
+            case 1: nuevaMusica = musicaFuerte; break;
+            case 2: nuevaMusica = musicaCaos; break;
         }
 
-        if (audioSource.clip == nuevaMusica) return;
-
-        audioSource.clip = nuevaMusica;
-        audioSource.Play();
+        // LE PEDIMOS AL SOUNDMANAGER QUE REPRODUZCA LA MÚSICA
+        if (SoundManager.instance != null && nuevaMusica != null)
+        {
+            SoundManager.instance.PlayMusic(nuevaMusica);
+        }
+        else
+        {
+            Debug.LogWarning("No se encontró el SoundManager o el AudioClip es nulo.");
+        }
     }
 
     void CambiarEstadoVisual(int nuevoEstado)

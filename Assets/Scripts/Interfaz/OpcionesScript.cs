@@ -80,13 +80,13 @@ public class OpcionesScript : MonoBehaviour
 
         PlayerPrefs.SetInt("volumenMusica", valor);
 
-        if (MusicManager.instance != null)
+        if (SoundManager.instance != null)
         {
-            MusicManager.instance.SetVolume(valor);
+            SoundManager.instance.SetMusicVolume(valor);
         }
         else
         {
-            Debug.LogWarning("MusicManager no encontrado.");
+            Debug.LogWarning("SoundManager no encontrado.");
         }
     }
     public void OpenMainMenu()
