@@ -1389,6 +1389,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   musicSource: {fileID: 2043987473}
   sfxSource: {fileID: 1870032342}
+  musicaMenu: {fileID: 8300000, guid: 75d3e77fbf252de4bbddb2586e699ec1, type: 3}
+  musicaTranquila: {fileID: 8300000, guid: 75d3e77fbf252de4bbddb2586e699ec1, type: 3}
+  musicaFuerte: {fileID: 8300000, guid: 3ecb0554bdd2c3344afe4abc91a38de2, type: 3}
+  musicaCaos: {fileID: 8300000, guid: f680647c173eda943b01b7285d3ec0a3, type: 3}
   buttonClick: {fileID: 8300000, guid: ca008e17b7259f14eb4e9420e9680795, type: 3}
 --- !u!4 &1273939059
 Transform:
