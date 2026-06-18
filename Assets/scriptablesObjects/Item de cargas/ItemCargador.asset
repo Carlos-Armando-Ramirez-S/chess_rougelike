@@ -15,6 +15,6 @@ MonoBehaviour:
   nombreItem: Cargador
   costoItem: 20
   icono: {fileID: 0}
-  descripcion: (item sujeto a cambios)
+  descripcion: ' Al capturar una pieza enemiga, te otorga 10 cargas.'
   usaSistemaDeCargas: 1
   cargasPorCaptura: 10

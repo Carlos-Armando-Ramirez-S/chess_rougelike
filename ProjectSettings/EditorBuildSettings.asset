@@ -14,9 +14,12 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/OpcionesScene.unity
     guid: cf69eab28593c8c418c70b6d91c78e9a
+  - enabled: 0
+    path: Assets/Scenes/TableroScene_MIA.unity
+    guid: 99c9720ab356a0642a771bea13969a05
   - enabled: 1
     path: Assets/Scenes/TableroScene.unity
-    guid: 99c9720ab356a0642a771bea13969a05
+    guid: 50edce43fa20d4746b50940ea22cbcf4
   - enabled: 1
     path: Assets/Scenes/ComoJugarScene.unity
     guid: 716c88f2598545946a501401617512d2

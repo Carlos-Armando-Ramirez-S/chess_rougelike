@@ -1,5 +1,6 @@
 using UnityEngine;
-using System.Collections.Generic; // <--- AÑADE ESTO
+using System.Collections;       // <--- NECESARIA para Corrutinas (IEnumerator normal)
+using System.Collections.Generic; // <--- NECESARIA para Listas (List<>)
 
 public class GestorCombate : MonoBehaviour
 {
@@ -14,27 +15,63 @@ public class GestorCombate : MonoBehaviour
     [SerializeField] private GameObject prefabParticulasCaptura;
     // ----------------------
 
-    public bool ProcesarCaptura(AtributosPieza atacante, AtributosPieza capturada)
+    // CAMBIO: Ahora es una Corrutina (IEnumerator) para poder esperar el dado
+    public IEnumerator ProcesarCaptura(AtributosPieza atacante, AtributosPieza capturada, System.Action<bool> callback = null)
     {
-        // ... (código del escudo igual) ...
+        // 1. Verificar Escudo
         if (capturada.IntentarUsarEscudo())
         {
             Debug.Log($"<color=cyan>¡{capturada.name} bloqueó el ataque con su ESCUDO!</color>");
-            return false;
+            callback?.Invoke(false); // Avisamos que falló
+            yield break; // Salimos
         }
 
-        // ... (código de daño y oro igual) ...
+        // --- NUEVO: CHECK DE ITEMS HIGH STAKES (DADO) ---
+        bool capturaCancelada = false;
+
+        if (atacante.itemsEquipados != null)
+        {
+            foreach (ItemData item in atacante.itemsEquipados)
+            {
+                // Si es el Martillo, ejecutamos la tirada
+                if (item is ItemMartillo martillo)
+                {
+                    bool exito = true;
+                    // Ejecutamos la lógica del dado y ESPERAMOS (yield return)
+                    yield return StartCoroutine(martillo.EjecutarEfectoCaptura(atacante, capturada, (res) => exito = res));
+
+                    if (!exito)
+                    {
+                        Debug.Log("<color=red>El dado falló. La captura se cancela.</color>");
+                        capturaCancelada = true;
+                        break; // Salimos del foreach
+                    }
+                }
+            }
+        }
+
+        // Si el dado canceló, no hacemos nada más
+        if (capturaCancelada)
+        {
+            callback?.Invoke(false);
+            yield break;
+        }
+        // ---------------------------------------------
+
+        // --- LÓGICA NORMAL DE CAPTURA (Tu código original) ---
         float danio = ObtenerDanio(capturada);
         towerManager.AplicarDanio(danio);
 
-        // --- NUEVO: AVISAR A LOS ITEMS ---
+        // Avisar a items normales (Cargador, etc)
         if (atacante != null && atacante.itemsEquipados != null)
         {
-            // Recorremos todos los items del atacante
             foreach (ItemData item in atacante.itemsEquipados)
             {
-                // Les decimos: "Oye, capturaste una pieza que valía X oro"
-                item.AlCapturarPieza(atacante, capturada.valorOro);
+                // Llamamos a la función normal para los items que no son dados
+                if (!(item is ItemMartillo)) // Evitamos llamar doble al martillo
+                {
+                    item.AlCapturarPieza(atacante, capturada.valorOro);
+                }
             }
         }
 
@@ -50,41 +87,27 @@ public class GestorCombate : MonoBehaviour
             if (gestorReyes != null) gestorReyes.ReyCapturado(capturada);
         }
 
-        // --- LÓGICA DE PARTÍCULAS CORREGIDA (MÉTODO SEGURO) ---
+        // Partículas
         if (prefabParticulasCaptura != null)
         {
-            // 1. Instanciamos el objeto (aún sin preocuparnos del padre)
             GameObject efecto = Instantiate(prefabParticulasCaptura);
-
-            // 2. Forzamos la posición EXACTA de la pieza capturada
             efecto.transform.position = capturada.transform.position + Vector3.up * 0.5f;
-
-            // 3. Lo hacemos hijo del tablero (esto hará que se mueva con él)
-            // El parámetro 'true' le dice a Unity: "Mantenlo en su posición mundial actual"
-            if (contenedorTablero != null)
-            {
-                efecto.transform.SetParent(contenedorTablero, true);
-            }
-
-            // 4. Resetear escala local por si acaso
+            if (contenedorTablero != null) efecto.transform.SetParent(contenedorTablero, true);
             efecto.transform.localScale = Vector3.one;
-
             Destroy(efecto, 3f);
         }
-        // ---------------------------------------
+
+        // Items de la víctima al morir
         if (capturada.itemsEquipados != null)
         {
-            // Creamos una lista temporal para evitar errores si el item modifica la lista original
             List<ItemData> itemsVictima = new List<ItemData>(capturada.itemsEquipados);
-            foreach (ItemData item in itemsVictima)
-            {
-                item.AlMorir(capturada, atacante);
-            }
+            foreach (ItemData item in itemsVictima) item.AlMorir(capturada, atacante);
         }
+
         gestorTablero.EliminarPieza(capturada.posicionEnTablero);
         Destroy(capturada.gameObject);
 
-        return true;
+        callback?.Invoke(true); // Avisamos que fue éxito
     }
 
     // ... (función ObtenerDanio igual) ...

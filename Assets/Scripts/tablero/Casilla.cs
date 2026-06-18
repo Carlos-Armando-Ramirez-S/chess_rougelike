@@ -6,16 +6,33 @@ public class Casilla : MonoBehaviour
 
     private Material materialOriginal;
     private Renderer miRenderer;
+    private GestorTablero gestorTablero; // Añadimos referencia al tablero
 
     void Awake()
     {
         miRenderer = GetComponent<Renderer>();
-        // Ya NO guardamos el material aquí. Lo haremos después de que CrearCasillas lo asigne.
+        // Buscamos el GestorTablero una sola vez al inicio
+        gestorTablero = FindFirstObjectByType<GestorTablero>();
     }
 
     void OnMouseDown()
     {
-        GameManager.instance.IntentarMoverA(this.gameObject);
+        if (GameManager.instance == null || gestorTablero == null) return;
+
+        // 1. Preguntamos: ¿Hay una pieza en esta casilla?
+        AtributosPieza pieza = gestorTablero.GetPiezaEn(this.coordenada);
+
+        if (pieza != null)
+        {
+            // 2. Si hay pieza, la seleccionamos.
+            // Esto hace que al hacer clic en el suelo bajo la pieza, se seleccione la pieza.
+            GameManager.instance.SeleccionarPieza(pieza);
+        }
+        else
+        {
+            // 3. Si NO hay pieza, intentamos movernos (lógica original)
+            GameManager.instance.IntentarMoverA(this.gameObject);
+        }
     }
 
     public void Iluminar(Material materialResaltado)
@@ -25,12 +42,9 @@ public class Casilla : MonoBehaviour
 
     public void Apagar()
     {
-        // Volvemos al material original que nos pasó CrearCasillas
         miRenderer.material = materialOriginal;
     }
 
-    // --- ¡MÉTODO CLAVE QUE DEBE EXISTIR! ---
-    // Este método es llamado por CrearCasillas para guardar el color inicial de la casilla.
     public void SetMaterialOriginal(Material mat)
     {
         materialOriginal = mat;
