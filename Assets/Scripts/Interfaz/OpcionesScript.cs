@@ -6,21 +6,19 @@ using System.Collections.Generic;
 
 public class OpcionesScript : MonoBehaviour
 {
-    public Slider slider;
-    // La variable sliderValue ya no es necesaria si usas el valor del slider directamente.
     public Toggle toggle;
     public Slider volumenSlider;
+    public Slider sfxSlider;
 
     public TMP_Dropdown resolucionesDropdown;
     private Resolution[] resoluciones;
 
     void Start()
     {
-        // Cargamos el volumen usando la MISMA clave que MusicManager
-        slider.value = PlayerPrefs.GetInt("volumenMusica", 1);
-
-        // Llamamos al método ChangeSlider para que aplique el volumen inicial
-        ChangeSlider();
+        volumenSlider.value = PlayerPrefs.GetInt("volumenMusica", 1);
+        sfxSlider.value = PlayerPrefs.GetInt("volumenSFX", 5);
+        ChangeMusicSlider();
+        ChangeSFXSlider();
 
         if (Screen.fullScreen)
         {
@@ -71,24 +69,30 @@ public class OpcionesScript : MonoBehaviour
     {
         Screen.fullScreen = pantallaCompleta;
     }
+public void ChangeMusicSlider()
+{
+    int valor = (int)volumenSlider.value;
 
-    public void ChangeSlider() 
+    Debug.Log("Guardando volumen música: " + valor);
+
+    PlayerPrefs.SetInt("volumenMusica", valor);
+
+    if (SoundManager.instance != null)
     {
-
-        // Obtenemos el valor directamente de nuestra referencia al slider
-        int valor = (int)volumenSlider.value;
-
-        PlayerPrefs.SetInt("volumenMusica", valor);
-
-        if (SoundManager.instance != null)
-        {
-            SoundManager.instance.SetMusicVolume(valor);
-        }
-        else
-        {
-            Debug.LogWarning("SoundManager no encontrado.");
-        }
+        SoundManager.instance.SetMusicVolume(valor);
     }
+}
+    public void ChangeSFXSlider()
+{
+    int valor = (int)sfxSlider.value;
+
+    Debug.Log("Guardando volumen SFX: " + valor);
+
+    if (SoundManager.instance != null)
+    {
+        SoundManager.instance.SetSFXVolume(valor);
+    }
+}
     public void OpenMainMenu()
     {
         SceneManager.LoadScene("MainMenuScene");

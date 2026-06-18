@@ -1394,6 +1394,10 @@ MonoBehaviour:
   musicaFuerte: {fileID: 8300000, guid: 3ecb0554bdd2c3344afe4abc91a38de2, type: 3}
   musicaCaos: {fileID: 8300000, guid: f680647c173eda943b01b7285d3ec0a3, type: 3}
   buttonClick: {fileID: 8300000, guid: ca008e17b7259f14eb4e9420e9680795, type: 3}
+  sonidoComun: {fileID: 8300000, guid: d4adfecd9450d6343b6da63e9819755d, type: 3}
+  sonidoCaballo: {fileID: 8300000, guid: d4adfecd9450d6343b6da63e9819755d, type: 3}
+  sonidoReina: {fileID: 8300000, guid: 6608b5689c38b4a49be7a062250102b4, type: 3}
+  sonidoRey: {fileID: 8300000, guid: 6608b5689c38b4a49be7a062250102b4, type: 3}
 --- !u!4 &1273939059
 Transform:
   m_ObjectHideFlags: 0

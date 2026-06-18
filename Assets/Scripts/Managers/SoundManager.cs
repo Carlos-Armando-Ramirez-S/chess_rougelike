@@ -20,6 +20,12 @@ public class SoundManager : MonoBehaviour
     [Header("SFX")]
     public AudioClip buttonClick;
 
+    [Header("SonidosPiezas")]
+    public AudioClip sonidoComun;
+    public AudioClip sonidoCaballo;
+    public AudioClip sonidoReina;
+    public AudioClip sonidoRey;
+
     private void Awake()
     {
         if (instance != null && instance != this)
@@ -110,5 +116,28 @@ public class SoundManager : MonoBehaviour
     {
         if (buttonClick == null || sfxSource == null) return;
         sfxSource.PlayOneShot(buttonClick);
+    }
+    
+    // --- Sonidos piezas ---
+    public void PlayPieceSound(TipoPieza tipo)
+    {
+        switch (tipo)
+        {
+            case TipoPieza.Caballo:
+                PlaySFX(sonidoCaballo);
+                break;
+
+            case TipoPieza.Reina:
+                PlaySFX(sonidoReina);
+                break;
+
+            case TipoPieza.Rey:
+                PlaySFX(sonidoRey);
+                break;
+
+            default:
+                PlaySFX(sonidoComun);
+                break;
+        }
     }
 }

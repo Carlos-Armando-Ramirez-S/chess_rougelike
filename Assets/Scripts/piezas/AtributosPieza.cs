@@ -34,9 +34,9 @@ public class AtributosPieza : MonoBehaviour
     // Variable existente (se reinicia cada turno)
     public bool seMovioEsteTurno = false;
 
-    // --- NUEVA VARIABLE AÑADIDA ---
+    // --- NUEVA VARIABLE Aï¿½ADIDA ---
     // Esta variable NO se reinicia. Guarda si la pieza se ha movido alguna vez en toda la partida.
-    // Es vital para que el peón solo pueda saltar 2 casillas en su primer movimiento.
+    // Es vital para que el peï¿½n solo pueda saltar 2 casillas en su primer movimiento.
     [Header("Estado de Movimiento Global")]
     public bool yaSeMovioEnPartida = false;
     // ------------------------------
@@ -50,6 +50,8 @@ public class AtributosPieza : MonoBehaviour
 
     private void OnMouseDown()
     {
+        SoundManager.instance?.PlayPieceSound(tipo);
+
         if (GameManager.instance != null)
         {
             GameManager.instance.SeleccionarPieza(this);
@@ -58,23 +60,23 @@ public class AtributosPieza : MonoBehaviour
 
 
     [Header("Visual Item (Opcional)")]
-    public SpriteRenderer iconoItemVisual; // Arrastra aquí un hijo que sirva de icono si quieres
+    public SpriteRenderer iconoItemVisual; // Arrastra aquï¿½ un hijo que sirva de icono si quieres
 
     [Header("Inventario")]
     public List<ItemData> itemsEquipados = new List<ItemData>();
     public int limiteItems = 4;
 
-    // Esta función la llamará la tienda para intentar equipar el item
+    // Esta funciï¿½n la llamarï¿½ la tienda para intentar equipar el item
     public bool EquiparItem(ItemData nuevoItem)
     {
-        // 1. Verificar si alcanzó el límite
+        // 1. Verificar si alcanzï¿½ el lï¿½mite
         if (itemsEquipados.Count >= limiteItems)
         {
-            Debug.Log($"{gameObject.name} no puede cargar más items (Límite: {limiteItems}).");
+            Debug.Log($"{gameObject.name} no puede cargar mï¿½s items (Lï¿½mite: {limiteItems}).");
             return false;
         }
 
-        // 2. Añadir a la lista
+        // 2. Aï¿½adir a la lista
         itemsEquipados.Add(nuevoItem);
 
         Debug.Log($"<color=cyan>{gameObject.name} ha equipado: {nuevoItem.nombreItem} ({itemsEquipados.Count}/{limiteItems})</color>");
@@ -83,7 +85,7 @@ public class AtributosPieza : MonoBehaviour
     }
 
     // =========================
-    // PROMOCIÓN
+    // PROMOCIï¿½N
     // =========================
 
     public void Promocionar()
@@ -125,7 +127,7 @@ public class AtributosPieza : MonoBehaviour
 
     public bool DebeRecibirRecompensaEstatuadorada()
     {
-        // Ahora solo verifica si tiene la estatua activa, sin importar si se movió
+        // Ahora solo verifica si tiene la estatua activa, sin importar si se moviï¿½
         if (estatuadoradaActiva)
         {
             Debug.Log($"<color=green>Recompensa Estatuadorada para {gameObject.name}</color>");
@@ -177,17 +179,17 @@ public class AtributosPieza : MonoBehaviour
     [Header("Cargador Activo")]
     public bool tieneCargador = false;
     public int cargasActuales = 0;
-    private ItemCargador datosCargador; // Referencia al ScriptableObject para leer cuánto sumar
+    private ItemCargador datosCargador; // Referencia al ScriptableObject para leer cuï¿½nto sumar
 
-    // Esta función la llama el ItemCargador al comprarlo
+    // Esta funciï¿½n la llama el ItemCargador al comprarlo
     public void ActivarCargador(ItemCargador datos)
     {
         tieneCargador = true;
         datosCargador = datos;
-        Debug.Log($"Cargador equipado. Cada captura dará {datos.cargasPorCaptura} cargas.");
+        Debug.Log($"Cargador equipado. Cada captura darï¿½ {datos.cargasPorCaptura} cargas.");
     }
 
-    // Esta función la llamará el GestorCombate cuando captures una pieza
+    // Esta funciï¿½n la llamarï¿½ el GestorCombate cuando captures una pieza
     public void SumarCargaCaptura()
     {
         // 1. Verificamos si la pieza tiene el item equipado
@@ -217,7 +219,7 @@ public class AtributosPieza : MonoBehaviour
     {
         if (tieneEscudo)
         {
-            Debug.Log($"<color=yellow>{gameObject.name} usó su ESCUDO</color>");
+            Debug.Log($"<color=yellow>{gameObject.name} usï¿½ su ESCUDO</color>");
 
             tieneEscudo = false;
 
