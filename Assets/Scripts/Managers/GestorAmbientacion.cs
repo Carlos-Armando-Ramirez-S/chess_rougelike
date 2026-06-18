@@ -32,12 +32,6 @@ public class GestorAmbientacion : MonoBehaviour
     public GameObject[] objetosFuertes;
     public GameObject[] objetosCaos;
 
-    [Header("Audio")]
-    public AudioSource audioSource;
-    public AudioClip musicaTranquila;
-    public AudioClip musicaFuerte;
-    public AudioClip musicaCaos;
-
     private int estadoActual = 0;
     private float timer;
 
@@ -64,7 +58,6 @@ public class GestorAmbientacion : MonoBehaviour
         RenderSettings.fogEndDistance = 200f;
 
         CambiarEstadoVisual(0);
-        CambiarMusica(0);
     }
 
     void Update()
@@ -152,31 +145,7 @@ public class GestorAmbientacion : MonoBehaviour
             default: return colorTranquilo;
         }
     }
-    void CambiarMusica(int estado)
-    {
-        if (audioSource == null) return;
-
-        AudioClip nuevaMusica = null;
-
-        switch (estado)
-        {
-            case 0:
-                nuevaMusica = musicaTranquila;
-                break;
-            case 1:
-                nuevaMusica = musicaFuerte;
-                break;
-            case 2:
-                nuevaMusica = musicaCaos;
-                break;
-        }
-
-        if (audioSource.clip == nuevaMusica) return;
-
-        audioSource.clip = nuevaMusica;
-        audioSource.Play();
-    }
-
+    
     void CambiarEstadoVisual(int nuevoEstado)
     {
         if (estadoActual == nuevoEstado) return;
@@ -186,7 +155,10 @@ public class GestorAmbientacion : MonoBehaviour
         ActivarGrupo(objetosTranquilos, nuevoEstado == 0);
         ActivarGrupo(objetosFuertes, nuevoEstado == 1);
         ActivarGrupo(objetosCaos, nuevoEstado == 2);
-        CambiarMusica(nuevoEstado);
+        if (SoundManager.instance != null)
+        {
+            SoundManager.instance.PlayLevelMusic(nuevoEstado);
+        }
     }
 
     void ActivarGrupo(GameObject[] lista, bool estado)

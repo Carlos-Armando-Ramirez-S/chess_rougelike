@@ -22,6 +22,12 @@ public class PausaScript : MonoBehaviour
         SceneManager.LoadScene(SceneManager.GetActiveScene().name);
     }
     public void Salir(){
+        // Cambiamos la música inmediatamente al hacer clic
+        if (SoundManager.instance != null)
+        {
+            SoundManager.instance.PlayMenuMusic();
+        }
+        // Luego cargamos la escena
         SceneManager.LoadScene("NivelesScene");
     }
 }

@@ -51,8 +51,8 @@ public class AtributosPieza : MonoBehaviour
 
     private void OnMouseDown()
     {
-        // --- AÑADE ESTA LÍNEA ---
-        // Si el ratón está sobre algún elemento UI (Panel, Botón, Texto), salimos.
+        // --- AÃ‘ADE ESTA LÃNEA ---
+        // Si el ratÃ³n estÃ¡ sobre algÃºn elemento UI (Panel, BotÃ³n, Texto), salimos.
         if (EventSystem.current.IsPointerOverGameObject()) return;
         // ------------------------
 
@@ -62,19 +62,19 @@ public class AtributosPieza : MonoBehaviour
         }
     }
 
-    // Función para que InicializadorPiezas nos pase el icono
+    // FunciÃ³n para que InicializadorPiezas nos pase el icono
     public void SetIconoVisual(GameObject icono)
     {
         iconoItemVisual = icono;
         iconoItemVisual.SetActive(false); // Empieza apagado
     }
 
-    // Función para equipar items
+    // FunciÃ³n para equipar items
     public bool EquiparItem(ItemData nuevoItem)
     {
         if (itemsEquipados.Count >= limiteItems)
         {
-            Debug.Log($"{gameObject.name} no puede cargar más items (Límite: {limiteItems}).");
+            Debug.Log($"{gameObject.name} no puede cargar mÃ¯Â¿Â½s items (LÃ¯Â¿Â½mite: {limiteItems}).");
             return false;
         }
 
@@ -91,7 +91,7 @@ public class AtributosPieza : MonoBehaviour
     }
 
     // =========================
-    // PROMOCIÓN
+    // PROMOCIÃ¯Â¿Â½N
     // =========================
 
     public void Promocionar()
@@ -165,7 +165,7 @@ public class AtributosPieza : MonoBehaviour
     {
         tieneCargador = true;
         datosCargador = datos;
-        Debug.Log($"Cargador equipado. Cada captura dará {datos.cargasPorCaptura} cargas.");
+        Debug.Log($"Cargador equipado. Cada captura darÃ¯Â¿Â½ {datos.cargasPorCaptura} cargas.");
     }
 
     public void SumarCargaCaptura()
@@ -191,7 +191,7 @@ public class AtributosPieza : MonoBehaviour
     {
         if (tieneEscudo)
         {
-            Debug.Log($"<color=yellow>{gameObject.name} usó su ESCUDO</color>");
+            Debug.Log($"<color=yellow>{gameObject.name} usÃ³ su ESCUDO</color>");
             tieneEscudo = false;
             return true;
         }
